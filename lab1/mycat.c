@@ -26,8 +26,7 @@ static int cat_stream(FILE *fp, const char *name, int opt_n, int opt_b, int opt_
         } else if (opt_n) {
             do_number = 1; num = ++ln_all;
         }
-        if (do_number)
-            printf("%6lld\t", num);
+        if (do_number) printf("%6lld\t", num);
         if (opt_E) {
             /* напечатаем строку, подставив '$' перед '\n' либо в конце, если \n нет */
             if (len > 0 && line[len-1] == '\n') {
@@ -67,6 +66,7 @@ int main (int argc, char** argv){
             case 'n': opt_n = 1; break;
             case 'b': opt_b = 1; break;
             case 'E': opt_E = 1; break;
+            case '?': fprintf(stderr, "Неправильный флаг\n"); return 1;
         }
     }
     int rc = 0;
@@ -90,5 +90,5 @@ int main (int argc, char** argv){
             }
         }
     }
-
+    return rc;
 }
