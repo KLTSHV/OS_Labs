@@ -1,9 +1,10 @@
-#define _XOPEN_SOURCE 700
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <dirent.h>
+#include <sys/types.h>
 #include <sys/stat.h>
 #include <pwd.h>
 #include <grp.h>
@@ -11,16 +12,10 @@
 #include <locale.h>
 #include <limits.h>
 #include <errno.h>
+#include <sys/xattr.h>
+#include <sys/acl.h>
+#include <sys/sysmacros.h>
 
-#ifdef __APPLE__
-  #include <sys/xattr.h>
-  #include <sys/acl.h>
-#elif defined(__linux__)
-  #include <sys/xattr.h>
-  #include <sys/acl.h>
-  #include <sys/types.h>
-  #include <sys/sysmacros.h>
-#endif
 
 #ifndef PATH_MAX
 #define PATH_MAX 4096
