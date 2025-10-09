@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 
 void usage(const char *prog) {
     fprintf(stderr, "Usage: %s <mode> <path>\n", prog);
@@ -155,7 +154,7 @@ int main(int argc, char **argv) {
 
         new_mode = (st.st_mode & ~07777) | (new_mode & 07777);
     }
-    
+
     if (chmod(path, new_mode) != 0) {
         perror("chmod");
         return 1;
