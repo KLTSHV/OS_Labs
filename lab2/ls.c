@@ -12,10 +12,20 @@
 #include <locale.h>
 #include <limits.h>
 #include <errno.h>
-#include <sys/xattr.h>
-#include <sys/acl.h>
-#include <sys/sysmacros.h>
 
+#if defined(__has_include)
+#  if __has_include(<sys/xattr.h>)
+#    define HAVE_SYS_XATTR 1
+#    include <sys/xattr.h>
+#  endif
+#  if __has_include(<sys/acl.h>)
+#    define HAVE_SYS_ACL 1
+#    include <sys/acl.h>
+#  endif
+#  if __has_include(<sys/sysmacros.h>)
+#    include <sys/sysmacros.h>
+#  endif
+#endif
 
 #ifndef PATH_MAX
 #define PATH_MAX 4096
@@ -74,22 +84,37 @@ static void build_permissions(mode_t m, char out[11]) {
 
 static char attr_marker(const char *fullpath, mode_t mode) {
     int has_x = 0, has_acl_flag = 0;
-#ifdef __APPLE__
+    (void)mode;
+
+#if defined(__APPLE__)
+  #if defined(HAVE_SYS_XATTR)
+    // На macOS listxattr(.., XATTR_NOFOLLOW)
     ssize_t n = listxattr(fullpath, NULL, 0, XATTR_NOFOLLOW);
     if (n > 0) has_x = 1;
+  #endif
+  #if defined(HAVE_SYS_ACL)
     acl_t acl = acl_get_link_np(fullpath, ACL_TYPE_EXTENDED);
     if (acl) { has_acl_flag = 1; acl_free(acl); }
+  #endif
+
 #elif defined(__linux__)
+  #if defined(HAVE_SYS_XATTR)
+    // На Linux используем llistxattr, чтобы не следовать по symlink
     ssize_t n = llistxattr(fullpath, NULL, 0);
     if (n > 0) has_x = 1;
+  #endif
+  #if defined(HAVE_SYS_ACL)
+    // ACL_TYPE_ACCESS для обычных файлов/каталогов
     acl_t acl = acl_get_file(fullpath, ACL_TYPE_ACCESS);
     if (acl) {
         acl_entry_t e; int r = acl_get_entry(acl, ACL_FIRST_ENTRY, &e);
         if (r == 1) has_acl_flag = 1;
         acl_free(acl);
     }
+  #endif
+
 #else
-    (void)fullpath; (void)mode;
+    (void)fullpath;
 #endif
     if (has_x) return '@';
     if (has_acl_flag) return '+';
@@ -209,7 +234,7 @@ int main(int argc, char *argv[]) {
         if (ulen > w_user) w_user = ulen;
         if (glen > w_group) w_group = glen;
 
-        // размер (игнорируем maj/min для устройств — упростим)
+        // размер (без maj/min для устройств)
         int szw = numwidth((unsigned long long)es[i].st.st_size);
         if (szw > w_size) w_size = szw;
     }

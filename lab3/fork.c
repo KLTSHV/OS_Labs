@@ -10,7 +10,7 @@ void at_exit_parent(void){
     printf("[PARENT atexit] PID=%d finishing (PPID=%d)\n", getpid(), getppid());
 }
 void at_exit_child(void){
-    printf("[CHILD atexit] PID=%d finishing (PPID=%d)\n", getpid, getppid());
+    printf("[CHILD atexit] PID=%d finishing (PPID=%d)\n", getpid(), getppid());
 }
 void sigint_handler(int signum){
     printf("[signal()] Caught signal %d (%s) in PID=%d\n",

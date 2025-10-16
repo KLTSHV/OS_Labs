@@ -1,6 +1,6 @@
 all: lab3
 lab3:
-	gcc -o fork fork.c
+	gcc fork.c -o fork
 clean:
 	rm -f fork
 
