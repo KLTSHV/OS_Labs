@@ -11,11 +11,18 @@
 #include "shm.h"
 
 static shm_data_t *g_shm = NULL; // указатель на общую память для обработчика сигналов
+static int g_shmid = -1;         // shmid нужен для shmctl
 
 void cleanup_and_exit(int sig) {
     if (g_shm) {
         g_shm->writer_active = 0; // снимаем флаг активности
+        shmdt(g_shm);             // отключаем сегмент
     }
+
+    if (g_shmid != -1) {
+        shmctl(g_shmid, IPC_RMID, NULL);
+    }
+
     _exit(0); // быстрая посадка без лишних действий
 }
 
@@ -29,14 +36,14 @@ int main(void) {
     sigaction(SIGTERM, &sa, NULL);
 
     // Получаем или создаём сегмент разделяемой памяти
-    int shmid = shmget(SHM_KEY, sizeof(shm_data_t), IPC_CREAT | 0666);
-    if (shmid == -1) {
+    g_shmid = shmget(SHM_KEY, sizeof(shm_data_t), IPC_CREAT | 0666);
+    if (g_shmid == -1) {
         perror("shmget");
         exit(EXIT_FAILURE);
     }
 
     // Подключаем сегмент
-    g_shm = (shm_data_t *)shmat(shmid, NULL, 0);
+    g_shm = (shm_data_t *)shmat(g_shmid, NULL, 0);
     if (g_shm == (void *)-1) {
         perror("shmat");
         exit(EXIT_FAILURE);
@@ -65,7 +72,7 @@ int main(void) {
     g_shm->writer_active = 1;
 
     printf("Sender: запущен. PID = %d\n", (int)getpid());
-    printf("Sender: разделяемая память shmid = %d\n", shmid);
+    printf("Sender: разделяемая память shmid = %d\n", g_shmid);
     printf("Sender: нажмите Ctrl+C для выхода.\n");
 
     // Основной цикл: раз в секунду обновляем сообщение
