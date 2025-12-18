@@ -47,7 +47,6 @@ int main(void) {
     printf("Receiver: PID=%d, shmid=%d, semid=%d\n", (int)getpid(), shmid, semid);
 
     while (1) {
-        sleep(3);
 
         time_t now = time(NULL);
         struct tm *tm_info = localtime(&now);
