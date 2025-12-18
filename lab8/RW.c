@@ -7,9 +7,7 @@ char channel[16];
 int counter = 0;
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-
 volatile sig_atomic_t stop = 0;
-
 void handle_sigint(int sig){
     stop = 1;
     printf("stopping threads..\n");
@@ -48,6 +46,5 @@ int main(){
         pthread_join(readers[i], NULL);
     }
     pthread_join(writer, NULL);
-    pthread_mutex_destroy(&mutex);
     return 0;
 }
