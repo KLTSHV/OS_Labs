@@ -38,10 +38,8 @@ void *reader_thread(void *arg) {
         sem_wait(&g_sem);
         strncpy(local, g_buf, sizeof(local) - 1);
         local[sizeof(local) - 1] = '\0';
-        sem_post(&g_sem);
 
         printf("Reader tid=%lu, buf=\"%s\"\n", (unsigned long)tid, local);
-        sleep(1);
     }
     return NULL;
 }
