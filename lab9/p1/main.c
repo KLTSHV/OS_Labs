@@ -40,6 +40,7 @@ void *reader_thread(void *arg) {
         local[sizeof(local) - 1] = '\0';
 
         printf("Reader tid=%lu, buf=\"%s\"\n", (unsigned long)tid, local);
+        sem_post(&g_sem);
     }
     return NULL;
 }

@@ -2,12 +2,14 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <signal.h>
+
 
 char channel[16];
 int counter = 0;
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-volatile sig_atomic_t stop = 0;
+volatile int stop = 0;
 void handle_sigint(int sig){
     stop = 1;
     printf("stopping threads..\n");
