@@ -9,11 +9,9 @@ volatile sig_atomic_t stop = 0;
 char channel[20] = "Entry 0";
 int counter = 0;
 
-/* Синхронизация через mutex + condvar */
 pthread_mutex_t mtx = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t  cv  = PTHREAD_COND_INITIALIZER;
 
-/* Номер версии (события) — меняется при каждой записи */
 unsigned long seq = 0;
 
 void handle_sigint(int sig) {
@@ -21,7 +19,6 @@ void handle_sigint(int sig) {
     stop = 1;
     printf("stopping threads..\n");
 
-    /* Разбудить всех, кто может ждать на условной переменной */
     pthread_mutex_lock(&mtx);
     pthread_cond_broadcast(&cv);
     pthread_mutex_unlock(&mtx);
@@ -34,9 +31,8 @@ void* writer_thread(void* arg) {
         pthread_mutex_lock(&mtx);
 
         snprintf(channel, sizeof(channel), "Entry %d", counter++);
-        seq++; /* опубликована новая версия */
+        seq++;
 
-        /* Разбудить всех читателей: появилась новая запись */
         pthread_cond_broadcast(&cv);
 
         pthread_mutex_unlock(&mtx);
@@ -54,7 +50,6 @@ void* reader_thread(void* arg) {
     while (!stop) {
         pthread_mutex_lock(&mtx);
 
-        /* Ждём, пока не появится новая версия или пока не остановимся */
         while (!stop && seq == last_seen) {
             pthread_cond_wait(&cv, &mtx);
         }
@@ -64,7 +59,6 @@ void* reader_thread(void* arg) {
             break;
         }
 
-        /* Под мьютексом читаем согласованные данные */
         char local[20];
         strncpy(local, channel, sizeof(local));
         local[sizeof(local) - 1] = '\0';
