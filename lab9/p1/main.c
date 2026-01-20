@@ -17,7 +17,6 @@ void *writer_thread(void *arg) {
     unsigned long counter = 0;
 
     while (g_run) {
-        sleep(1);
         // критическая секция: запись в общий массив
         sem_wait(&g_sem);
         counter++;
@@ -41,7 +40,9 @@ void *reader_thread(void *arg) {
 
         printf("Reader tid=%lu, buf=\"%s\"\n", (unsigned long)tid, local);
         sem_post(&g_sem);
+        usleep(300000);
     }
+
     return NULL;
 }
 

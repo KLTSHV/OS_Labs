@@ -43,5 +43,4 @@ int main(){
     }
     pthread_join(writer, NULL);
     return 0;
-
 }

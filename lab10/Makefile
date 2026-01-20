@@ -2,7 +2,8 @@ all: lab10
 	./rwlock
 
 lab10: rwlock.c
-	gcc -o  rwlock rwlock.c -lm
+	gcc rwlock.c -o rwlock -pthread
+
 
 clean:
 	rm -rf rwlock
